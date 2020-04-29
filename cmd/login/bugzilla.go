@@ -2,15 +2,15 @@ package login
 
 import (
 	"fmt"
-	"github.com/zalando/go-keyring"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/zalando/go-keyring"
 )
 
 const (
 	service = "bugzilla"
-	user = "io.olm.cop"
+	user    = "io.olm.cop"
 )
 
 var BugzillaLoginCmd = &cobra.Command{
@@ -20,7 +20,7 @@ var BugzillaLoginCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		prompt := promptui.Prompt{
 			Label: "API key: ",
-			Mask: '*',
+			Mask:  '*',
 		}
 
 		key, err := prompt.Run()

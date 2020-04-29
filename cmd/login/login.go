@@ -24,6 +24,5 @@ var LoginCmd = &cobra.Command{
 }
 
 func init() {
-	LoginCmd.AddCommand(BugzillaLoginCmd)
 	LoginCmd.PersistentFlags().BoolVarP(&loginOpts.debug, "debug", "d", false, "enable debug logging")
 }

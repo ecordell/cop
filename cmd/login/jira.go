@@ -2,10 +2,10 @@ package login
 
 import (
 	"fmt"
-	"github.com/zalando/go-keyring"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/zalando/go-keyring"
 )
 
 const (
@@ -32,7 +32,7 @@ var JiraLoginCmd = &cobra.Command{
 
 		prompt = promptui.Prompt{
 			Label: "Password: ",
-			Mask: '*',
+			Mask:  '*',
 		}
 
 		pass, err := prompt.Run()
@@ -48,5 +48,5 @@ var JiraLoginCmd = &cobra.Command{
 }
 
 func init() {
-	LoginCmd.AddCommand(BugzillaLoginCmd)
+	LoginCmd.AddCommand(JiraLoginCmd)
 }
