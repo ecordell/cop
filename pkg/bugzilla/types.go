@@ -1,5 +1,9 @@
 package bugzilla
 
+import (
+	"time"
+)
+
 // Bug is a record of a bug. See API documentation at:
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 type Bug struct {
@@ -151,9 +155,9 @@ type GithubExternalBug struct {
 func NewGithubExternalBug(in ExternalBug, org, repo string, num int) GithubExternalBug {
 	return GithubExternalBug{
 		ExternalBug: in,
-		Org: org,
-		Repo: repo,
-		Num: num,
+		Org:         org,
+		Repo:        repo,
+		Num:         num,
 	}
 }
 
@@ -196,4 +200,29 @@ type NewExternalBugIdentifier struct {
 	// For GitHub issues and pull requests, this ID is commonly the path
 	// like `org/repo/pull/number` or `org/repo/issue/number`.
 	ID string `json:"ext_bz_bug_id"`
+}
+
+// Comment is a bug description or correspondence on a bug.
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/comment.html
+type Comment struct {
+	// ID is the globally unique ID for the comment.
+	ID int `json:"id,omitempty"`
+	// BugID is the ID of the bug that this comment is on.
+	BugID int `json:"bug_id,omitempty"`
+	// AttachmentID is the ID of the attachment the comment was made on, if the comment was made on an attachment.. Otherwise it will be null.
+	AttachmentID int `json:"attachment_id,omitempty"`
+	// Count is the number of the comment local to the bug. The Description is 0, comments start with 1.
+	Count int `json:"count,omitempty"`
+	// Text is the actual text of the comment.
+	Text string `json:"text,omitempty"`
+	// Creator is the login name of the comment's author.
+	Creator string `json:"creator,omitempty"`
+	// CreationTime is the time (in Bugzilla's timezone) that the comment was added.
+	CreationTime time.Time `json:"creation_time,omitempty"`
+	// IsPrivate is true if this comment is private (only visible to a certain group called the "insidergroup"), false otherwise.
+	IsPrivate bool `json:"is_private,omitempty"`
+	// IsMarkdown is true if this comment needs Markdown processing; false otherwise.
+	IsMarkdown bool `json:"is_markdown,omitempty"`
+	// Tags is an array of comment tags currently set for the comment.
+	Tags []string `json:"tags,omitempty"`
 }
