@@ -18,7 +18,8 @@ type Client interface {
 	GetExternalBugPRsOnBug(id int) ([]GithubExternalBug, error)
 	GetJiraIssueForBug(id int) ([]JiraExternalBug, error)
 	SearchBugs(query string) ([]*Bug, error)
-    UpdateInternalWhiteboard(id int, value string) (*Bug, error)
+	UpdateInternalWhiteboard(id int, value string) (*Bug, error)
+	GetCommentsOnBug(id int) ([]Comment, error)
 	//UpdateBug(id int, update BugUpdate) error
 	//AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
@@ -110,7 +111,7 @@ func (c *client) GetBug(id int) (*Bug, error) {
 
 func (c *client) UpdateInternalWhiteboard(id int, value string) (*Bug, error) {
 	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateInternalWhiteboard", "id": id})
-	body, err := json.Marshal(Bug{InternalWhiteboard:value})
+	body, err := json.Marshal(Bug{InternalWhiteboard: value})
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +188,6 @@ func (c *client) GetJiraIssueForBug(id int) ([]JiraExternalBug, error) {
 	return prs, nil
 }
 
-
 // GetExternalBugPRsOnBug retrieves external bugs on a Bug from the server
 // and returns any that reference a Pull Request in GitHub
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
@@ -235,6 +235,32 @@ func (c *client) GetExternalBugPRsOnBug(id int) ([]GithubExternalBug, error) {
 	return prs, nil
 }
 
+// GetCommentsOnBug retrieves comments for a particular bug.
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/comment.html#get-comments
+func (c *client) GetCommentsOnBug(id int) ([]Comment, error) {
+	logger := c.logger.WithFields(logrus.Fields{"method": "GetCommentsOnBug", "id": id})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d/comment", c.endpoint, id), nil)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs map[string]struct {
+			Comments []Comment `json:"comments"`
+		} `json:"bugs"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	if bug, ok := parsedResponse.Bugs[strconv.Itoa(id)]; ok {
+		return bug.Comments, nil
+	}
+	return nil, nil
+}
+
 func PullFromIdentifier(identifier string) (org, repo string, num int, err error) {
 	parts := strings.Split(identifier, "/")
 	if len(parts) != 4 {
@@ -250,7 +276,3 @@ func PullFromIdentifier(identifier string) (org, repo string, num int, err error
 
 	return parts[0], parts[1], number, nil
 }
-
-
-
-
