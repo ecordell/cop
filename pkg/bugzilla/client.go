@@ -1,6 +1,7 @@
 package bugzilla
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,6 +17,8 @@ type Client interface {
 	GetBug(id int) (*Bug, error)
 	GetExternalBugPRsOnBug(id int) ([]GithubExternalBug, error)
 	GetJiraIssueForBug(id int) ([]JiraExternalBug, error)
+	SearchBugs(query string) ([]*Bug, error)
+    UpdateInternalWhiteboard(id int, value string) (*Bug, error)
 	//UpdateBug(id int, update BugUpdate) error
 	//AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 }
@@ -92,7 +95,7 @@ func (c *client) GetBug(id int) (*Bug, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(raw))
+	//fmt.Println(string(raw))
 	var parsedResponse struct {
 		Bugs []*Bug `json:"bugs,omitempty"`
 	}
@@ -103,6 +106,45 @@ func (c *client) GetBug(id int) (*Bug, error) {
 		return nil, fmt.Errorf("did not get one bug, but %d: %v", len(parsedResponse.Bugs), parsedResponse)
 	}
 	return parsedResponse.Bugs[0], nil
+}
+
+func (c *client) UpdateInternalWhiteboard(id int, value string) (*Bug, error) {
+	logger := c.logger.WithFields(logrus.Fields{"method": "UpdateInternalWhiteboard", "id": id})
+	body, err := json.Marshal(Bug{InternalWhiteboard:value})
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	if err != nil {
+		return nil, err
+	}
+	_, err = c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	//fmt.Println(string(raw))
+	return nil, nil
+}
+
+func (c *client) SearchBugs(query string) ([]*Bug, error) {
+	logger := c.logger.WithFields(logrus.Fields{"method": "SearchBugs", "query": query})
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug?%s", c.endpoint, query), nil)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	//fmt.Println(string(raw))
+	var parsedResponse struct {
+		Bugs []*Bug `json:"bugs,omitempty"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	return parsedResponse.Bugs, nil
 }
 
 // GetJiraIssueForBug retrieves external bugs on a Bug from the server

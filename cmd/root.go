@@ -3,6 +3,7 @@ package cmd
 import (
   "fmt"
   "github.com/ecordell/cop/cmd/bug"
+  "github.com/ecordell/cop/cmd/login"
   "os"
 
   "github.com/spf13/cobra"
@@ -19,6 +20,7 @@ var RootCmd = &cobra.Command{
 
 func Execute() {
   RootCmd.AddCommand(bug.BugCmd)
+  RootCmd.AddCommand(login.LoginCmd)
   if err := RootCmd.Execute(); err != nil {
     fmt.Println(err)
     os.Exit(1)

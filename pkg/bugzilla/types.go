@@ -41,6 +41,8 @@ type Bug struct {
 	Groups []string `json:"groups,omitempty"`
 	// ID is the unique numeric ID of this bug.
 	ID int `json:"id,omitempty"`
+	// InternalWhiteboard is used for internal team notes
+	InternalWhiteboard string `json:"cf_internal_whiteboard,omitempty"`
 	// IsCCAccessible is if true, this bug can be accessed by members of the CC list, even if they are not in the groups the bug is restricted to.
 	IsCCAccessible bool `json:"is_cc_accessible,omitempty"`
 	// IsConfirmed is true if the bug has been confirmed. Usually this means that the bug has at some point been moved out of the UNCONFIRMED status and into another open status.
